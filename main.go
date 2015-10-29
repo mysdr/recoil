@@ -39,9 +39,9 @@ func main() {
 	ricochet.Init(*privateKey, *debug)
 	err := ricochet.Connect(*hostname, *target)
 	if err != nil {
-		logger.Print(*target + " appears to be offline")
+		logger.Printf("%s appears to be offline", *target)
 	} else {
-		logger.Print(*target + " appears to be online")
+		logger.Printf("%s appears to be online", *target)
 	}
 
 	if *action == "contact-request" {
@@ -49,7 +49,7 @@ func main() {
 		ricochet.Init(*privateKey, *debug)
 		ricochet.Connect(*hostname, *target)
 		ricochet.SendContactRequest(*name, *message)
-		logger.Print("sent contact request to " + *target)
+		logger.Printf("Sent contact request to [%s]", *target)
 	}
 
 	if *action == "send-messages" {
@@ -63,13 +63,13 @@ func main() {
 		for scanner.Scan() {
 			message := scanner.Text()
 			if len(message) > 0 && message[0] != '#' {
-				logger.Print("sending message " + message)
+				logger.Printf("Sending message: %+q", message)
 				ricochet.SendMessage(scanner.Text(), 5)
 				time.Sleep(time.Second * 1)
 			}
 
 			if len(message) > 2 && message[0] == '#' {
-				logger.Print("Sending Test Messages: " + message[2:])
+				logger.Printf("Sending %s", message[2:])
 			}
 		}
 	}
