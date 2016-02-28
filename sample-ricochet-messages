@@ -1,10 +1,33 @@
 Simple Text
 
-# Link Schemes
+# URI Schemes
 http://hey.i.am.a.link.com
 http://hey.i.am.a.link.com/with/directories
 https://securelink.hey.i.am.a.link.com
 ricochet:link
 
+# Invalid Byte
+NullByte\0Null
+http://ricochet.im/
+http://\0Test
+www.\0.com
+https://test.com/\0LOL
+https://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOLhttps://test.com/\0LOL
+
+# Unicode
+♳ 	♴ 	♵ 	♶ 	♷ 	♸ 	♹
+
+# HTML
+http://ricochet.im/&&&/k/
+http://ricochet.im&&&/k/
+http://ricochet.im<
+http://ricochet.im>
+http://ricochet.im"
+http://ricochet.im'
+http://ricochet.im>><<<<><<>
+
 # Phishing Attacks
+
+هي لغة برمج http://www.google.com/ ة تستخدم...
+هي لغة برمج http://www.google.com/ ة تستخدم...
 ‮http://ricochet.im/moc.live.www//:ptth

@@ -6,6 +6,7 @@ import (
 	"github.com/s-rah/go-ricochet"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -48,8 +49,23 @@ func main() {
 		ricochet := new(goricochet.Ricochet)
 		ricochet.Init(*privateKey, *debug)
 		ricochet.Connect(*hostname, *target)
-		ricochet.SendContactRequest(*name, *message)
+		ricochet.SendContactRequest(3, *name, *message)
 		logger.Printf("Sent contact request to [%s]", *target)
+	}
+
+	if *action == "spamchannel" {
+		c := int32(5)
+		go ricochet.ListenAndWait()
+		m := make([]byte, 1024)
+		for i := 0; i < 1024; i++ {
+			m[i] = 'a'
+		}
+		ricochet.OpenChatChannel(c)
+		for {
+			ricochet.SendMessage(c, string(m))
+			ricochet.Connect(*hostname, *target)
+		}
+
 	}
 
 	if *action == "send-messages" {
@@ -58,13 +74,14 @@ func main() {
 			log.Fatal(err)
 		}
 		defer file.Close()
-		ricochet.OpenChannel("im.ricochet.chat", 5)
+		ricochet.OpenChatChannel(5)
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			message := scanner.Text()
+			message = strings.Replace(message, "\\0", string(0x00), -1)
 			if len(message) > 0 && message[0] != '#' {
 				logger.Printf("Sending message: %+q", message)
-				ricochet.SendMessage(scanner.Text(), 5)
+				ricochet.SendMessage(5, message)
 				time.Sleep(time.Second * 1)
 			}
 
