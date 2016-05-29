@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
-
-	"github.com/s-rah/go-ricochet"
+	"github.com/s-rah/recoil"
 	"github.com/visualfc/goqt/ui"
+	"log"
+	"os"
 )
 
 type Widget struct {
@@ -119,7 +119,7 @@ func main_ui() {
 	w.sendButton.OnClicked(func() {
 		// Need to add back in debug
 		target := w.editTarget.DisplayText()
-		debug := false
+		//debug := false
 		action := w.editAction.CurrentText()
 		hostname := w.editHostname.DisplayText()
 		privateKey := w.editKey.ToPlainText()
@@ -140,30 +140,34 @@ func main_ui() {
 			return
 		}
 
-		ricochet := new(goricochet.Ricochet)
-		ricochet.Init(debug)
-		err := ricochet.Connect(hostname, target)
-		if err != nil {
-			w.logsBox.AppendPlainText(fmt.Sprintf("[INFO] Target appears to be offline."))
-			w.StatusBar().ShowMessage(fmt.Sprintf("%s appers to be offline.", target))
-		} else {
-			w.logsBox.AppendPlainText(fmt.Sprintf("[INFO] Target appears to be online."))
-			w.StatusBar().ShowMessage(fmt.Sprintf("%s appers to be online.", target))
-		}
+		recoil := new(recoil.Recoil)
+		recoil.Ready = make(chan bool)
 
 		if action == "ping" {
-			w.logsBox.AppendPlainText("[ERROR] ping action not functional.")
-			w.StatusBar().ShowMessage("Error: ping action not functional.")
-		} else if action == "contact-request" {
-			ricochet := new(goricochet.Ricochet)
-			ricochet.Init(debug)
-			ricochet.Connect(hostname, target)
-			ricochet.SendContactRequest(3, name, message)
-			w.logsBox.AppendPlainText(fmt.Sprintf("[INFO] Sent contact request to %s.", target))
-			w.StatusBar().ShowMessage(fmt.Sprintf("Sent contact request to %s.", target))
-		} else if action == "spamchannel" {
-			w.logsBox.AppendPlainText("[ERROR] spamchannel action not functional.")
-			w.StatusBar().ShowMessage("Error: spamchannel action not functional.")
+			online := recoil.Ping(privateKey, hostname, target)
+			if online == true {
+				w.logsBox.AppendPlainText(fmt.Sprintf("[INFO] Target appears to be online."))
+				w.StatusBar().ShowMessage(fmt.Sprintf("%s appers to be online.", target))
+			} else {
+				w.logsBox.AppendPlainText(fmt.Sprintf("[INFO] Target appears to be offline."))
+				w.StatusBar().ShowMessage(fmt.Sprintf("%s appers to be offline.", target))
+			}
+		} else {
+			go recoil.Authenticate(privateKey, hostname, target)
+			log.Printf("Running Recoil...")
+			ready := <-recoil.Ready
+			log.Printf("Received Authentication Result %v", ready)
+			if ready == true {
+				if action == "contact-request" {
+					recoil.SendContactRequest(name, message)
+					w.logsBox.AppendPlainText(fmt.Sprintf("[INFO] Sent contact request to %s.", target))
+					w.StatusBar().ShowMessage(fmt.Sprintf("Sent contact request to %s.", target))
+				} else if action == "spamchannel" {
+					// go recoil.SpamChannel()
+					// w.logsBox.AppendPlainText("[ERROR] spamchannel action not functional.")
+					// w.StatusBar().ShowMessage("Error: spamchannel action not functional.")
+				}
+			}
 		}
 	})
 	w.labelLogs = ui.NewLabel()
